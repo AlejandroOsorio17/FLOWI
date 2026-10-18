@@ -1,6 +1,9 @@
 package com.example.demo1.domain.port.out;
 
 import java.util.Optional;
+import java.util.List;
+
+import com.example.demo1.domain.InventoryItem;
 
 public interface InventoryRepository {
     /** Retorna el stock actual del producto en la tienda. */
@@ -8,4 +11,8 @@ public interface InventoryRepository {
 
     /** Descuenta 'cantidad' unidades. Lanza excepción si no hay fila. */
     void decrementStock(Long storeId, Long productId, int cantidad);
+
+    List<InventoryItem> findInventoryByStore(Long storeId);
+
+    List<InventoryItem> findLowStockByStore(Long storeId, int threshold);
 }

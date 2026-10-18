@@ -1,10 +1,12 @@
 package com.example.demo1.infrastructure.adapter.out.persistence;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 import com.example.demo1.domain.port.out.InventoryRepository;
+import com.example.demo1.domain.InventoryItem;
 
 @Component
 public class InventoryRepositoryImpl implements InventoryRepository {
@@ -23,5 +25,15 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     @Override
     public void decrementStock(Long storeId, Long productId, int cantidad) {
         jpaRepository.decrementCantidad(storeId, productId, cantidad);
+    }
+
+    @Override
+    public List<InventoryItem> findInventoryByStore(Long storeId) {
+        return jpaRepository.findInventoryByStore(storeId);
+    }
+
+    @Override
+    public List<InventoryItem> findLowStockByStore(Long storeId, int threshold) {
+        return jpaRepository.findLowStockByStore(storeId, threshold);
     }
 }

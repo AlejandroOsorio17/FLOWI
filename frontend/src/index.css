@@ -11,6 +11,21 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: #F8FAFC;
   color: #1E293B;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
 }
 
 * {

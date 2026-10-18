@@ -80,17 +80,17 @@ export function EmptyState({ icon, title, subtitle, onAction, actionLabel }: {
   )
 }
 
-export function Toast({ message, type }: { message: string; type: "success" | "error" | "warning" }) {
+export function Toast({ message, type }: { message: string; type: "success" | "error" }) {
   return (
     <div
       className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded text-sm font-medium shadow-lg"
       style={{
-        backgroundColor: type === "success" ? "#d4edda" : type === "warning" ? "#f5ecd4" : "#f5d4d4",
-        border: `1px solid ${type === "success" ? "#b8ddc4" : type === "warning" ? "#e0d0a0" : "#e0b0b0"}`,
-        color: type === "success" ? "#3a6b47" : type === "warning" ? "#7a5a20" : "#7a3a3a",
+        backgroundColor: type === "success" ? "#d4edda" : "#f5d4d4",
+        border: `1px solid ${type === "success" ? "#b8ddc4" : "#e0b0b0"}`,
+        color: type === "success" ? "#3a6b47" : "#7a3a3a",
       }}
     >
-      <span>{type === "success" ? "✓" : type === "warning" ? "!" : "✗"}</span>
+      <span>{type === "success" ? "✓" : "✗"}</span>
       {message}
     </div>
   )
@@ -118,8 +118,8 @@ export function Header({ title, subtitle, view, onToggle }: {
   )
 }
 
-export function FormPanel({ title, onCancel, onSubmit, children, loading = false }: {
-  title: string; onCancel: () => void; onSubmit: () => void; children: React.ReactNode; loading?: boolean
+export function FormPanel({ title, onCancel, onSubmit, children }: {
+  title: string; onCancel: () => void; onSubmit: () => void; children: React.ReactNode
 }) {
   return (
     <div className="p-8 max-w-2xl">
@@ -132,13 +132,12 @@ export function FormPanel({ title, onCancel, onSubmit, children, loading = false
         <div className="flex gap-3 mt-6 pt-5 border-t" style={{ borderColor: "#d4c9b0" }}>
           <button
             onClick={onSubmit}
-            disabled={loading}
             className="px-5 py-2 text-sm font-semibold rounded transition-all duration-150"
             style={{ backgroundColor: "#ddd4c0", color: "#3d2e14", border: "1px solid #c4b898" }}
             onMouseEnter={(e) => { ;(e.currentTarget as HTMLElement).style.backgroundColor = "#ccc0a8" }}
             onMouseLeave={(e) => { ;(e.currentTarget as HTMLElement).style.backgroundColor = "#ddd4c0" }}
           >
-            {loading ? "Cargando..." : "Guardar registro"}
+            Guardar registro
           </button>
           <button
             onClick={onCancel}

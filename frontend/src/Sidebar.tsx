@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { NavLink } from "react-router"
+import { NavLink, useNavigate } from "react-router"
+import { useAuth } from "./auth/AuthContext"
 
 const HomeIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,16 +44,21 @@ const MenuIcon = () => (
 )
 
 const navItems = [
-  { label: "Inicio", to: "/", icon: HomeIcon, exact: true },
-  { label: "Productos", to: "/productos", icon: BoxIcon, exact: false },
-  { label: "Tiendas", to: "/tiendas", icon: StoreIcon, exact: false },
-  { label: "Centros de distribución", to: "/centros", icon: WarehouseIcon, exact: false },
+  { label: "Inicio", to: "/", icon: HomeIcon, exact: true, adminOnly: false },
+  { label: "Productos", to: "/productos", icon: BoxIcon, exact: false, adminOnly: false },
+  { label: "Tiendas", to: "/tiendas", icon: StoreIcon, exact: false, adminOnly: false },
+  { label: "Centros de distribución", to: "/centros", icon: WarehouseIcon, exact: false, adminOnly: true },
 ]
-
-const emptySlots = [null, null, null, null]
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true)
+  const { logout, role } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login", { replace: true })
+  }
 
   return (
     <>
@@ -84,14 +90,18 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <span className="text-2xl font-bold tracking-tight" style={{ color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
-            Flowi
-          </span>
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">F</span>
+            <div>
+              <span className="block text-xl font-bold tracking-tight text-white">Flowi</span>
+              <span className="block text-[9px] text-slate-400">Supply chain, simplified</span>
+            </div>
+          </div>
         </div>
 
         {/* Nav items */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-          {navItems.map(({ label, to, icon: Icon, exact }) => (
+          {navItems.filter((item) => !item.adminOnly || role === "admin").map(({ label, to, icon: Icon, exact }) => (
             <NavLink
               key={to}
               to={to}
@@ -116,24 +126,28 @@ export default function Sidebar() {
                 }
               }}
             >
-              <Icon />
-              <span className="whitespace-nowrap">{label}</span>
+              <span className="mt-0.5 shrink-0"><Icon /></span>
+              <span className="min-w-0 whitespace-normal leading-4">{label}</span>
             </NavLink>
           ))}
 
-          {/* Empty slots */}
-          <div className="mt-2 flex flex-col gap-1">
-            {emptySlots.map((_, i) => (
-              <div
-                key={i}
-                className="h-8 rounded-lg transition-all duration-150"
-                style={{ backgroundColor: "transparent" }}
-                onMouseEnter={(e) => { ;(e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.05)" }}
-                onMouseLeave={(e) => { ;(e.currentTarget as HTMLElement).style.backgroundColor = "transparent" }}
-              />
-            ))}
-          </div>
         </nav>
+        <div className="m-3 rounded-xl border border-white/10 p-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-[10px] font-bold text-white">{role === "admin" ? "AD" : "OP"}</span>
+            <div className="min-w-0">
+              <div className="truncate text-xs font-semibold text-white">{role === "admin" ? "Administrador" : "Operador"}</div>
+              <div className="truncate text-[10px] text-slate-400">{role === "admin" ? "Acceso completo" : "Acceso limitado"}</div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/15"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" /></svg>
+            Cerrar sesión
+          </button>
+        </div>
       </aside>
     </>
   )

@@ -10,7 +10,7 @@ export default function Welcome() {
   const navigate = useNavigate()
 
   return (
-    <div className="flex flex-col h-full items-center justify-center" style={{ backgroundColor: "#F8FAFC" }}>
+    <div className="flex h-full flex-col items-center justify-center bg-white">
       {/* Card container */}
       <div
         className="flex flex-col items-center gap-10"

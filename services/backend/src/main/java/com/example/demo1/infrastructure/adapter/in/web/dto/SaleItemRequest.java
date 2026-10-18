@@ -14,10 +14,22 @@ public class SaleItemRequest {
     @Min(value = 1, message = "Debe comprar al menos 1 unidad")
     private Integer cantidad;
 
-    public SaleItemRequest() {}
+    public SaleItemRequest() {
+    }
 
-    public Long getProductId()              { return productId; }
-    public void setProductId(Long productId){ this.productId = productId; }
-    public Integer getCantidad()            { return cantidad; }
-    public void setCantidad(Integer c)      { this.cantidad = c; }
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public Integer getCantidad() {
+        return cantidad;
+    }
+
+    public void setCantidad(Integer c) {
+        this.cantidad = c;
+    }
 }

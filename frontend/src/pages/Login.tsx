@@ -15,28 +15,36 @@ function FlowiMark() {
 export default function Login() {
   const { isAuthenticated, login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [remember, setRemember] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{ username?: string; password?: string; form?: string }>({})
 
   if (isAuthenticated) return <Navigate to="/" replace />
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     const nextErrors: typeof errors = {}
-    if (!email.trim()) nextErrors.email = "Ingresa tu correo electrónico."
+    if (!username.trim()) nextErrors.username = "Ingresa tu usuario."
     if (!password) nextErrors.password = "Ingresa tu contraseña."
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
       return
     }
-    if (!login(email, password, remember)) {
-      setErrors({ form: "El correo electrónico o la contraseña no son válidos." })
-      return
+
+    setSubmitting(true)
+    try {
+      await login(username, password, remember)
+      navigate("/", { replace: true })
+    } catch (error) {
+      setErrors({
+        form: error instanceof Error ? error.message : "No se pudo iniciar sesión. Inténtalo de nuevo.",
+      })
+    } finally {
+      setSubmitting(false)
     }
-    navigate("/", { replace: true })
   }
 
   return (
@@ -71,7 +79,7 @@ export default function Login() {
           </div>
           <p className="text-sm font-semibold text-blue-600">Bienvenido de nuevo</p>
           <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-950">Inicia sesión en Flowi</h1>
-          <p className="mt-3 text-sm text-slate-500">Usa un perfil de prueba para validar el acceso según su rol.</p>
+          <p className="mt-3 text-sm text-slate-500">Ingresa las credenciales de tu cuenta.</p>
 
           <form onSubmit={handleSubmit} className="mt-9" noValidate>
             {errors.form && (
@@ -80,16 +88,16 @@ export default function Login() {
               </div>
             )}
             <label className="block">
-              <span className="text-sm font-semibold text-slate-700">Correo electrónico</span>
+              <span className="text-sm font-semibold text-slate-700">Usuario</span>
               <input
-                type="email"
-                value={email}
-                onChange={(event) => { setEmail(event.target.value); setErrors((current) => ({ ...current, email: undefined, form: undefined })) }}
-                placeholder="nombre@empresa.com"
-                autoComplete="email"
-                className={`mt-2 h-12 w-full rounded-lg border bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.email ? "border-rose-400 focus:border-rose-500 focus:ring-rose-100" : "border-slate-300 focus:border-blue-500 focus:ring-blue-100"}`}
+                type="text"
+                value={username}
+                onChange={(event) => { setUsername(event.target.value); setErrors((current) => ({ ...current, username: undefined, form: undefined })) }}
+                placeholder="Tu nombre de usuario"
+                autoComplete="username"
+                className={`mt-2 h-12 w-full rounded-lg border bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${errors.username ? "border-rose-400 focus:border-rose-500 focus:ring-rose-100" : "border-slate-300 focus:border-blue-500 focus:ring-blue-100"}`}
               />
-              {errors.email && <span className="mt-1.5 block text-xs font-medium text-rose-600">{errors.email}</span>}
+              {errors.username && <span className="mt-1.5 block text-xs font-medium text-rose-600">{errors.username}</span>}
             </label>
 
             <label className="mt-5 block">
@@ -120,34 +128,17 @@ export default function Login() {
               Mantener mi sesión iniciada
             </label>
 
-            <button type="submit" className="mt-7 h-12 w-full rounded-lg bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-              Validar acceso
+            <button type="submit" disabled={submitting} className="mt-7 h-12 w-full rounded-lg bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:cursor-wait disabled:opacity-60">
+              {submitting ? "Conectando..." : "Iniciar sesión"}
             </button>
           </form>
 
           <div className="mt-7 border-t border-slate-200 pt-6">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Perfiles de prueba</div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => { setEmail("admin@flowi.co"); setPassword("Flowi2025"); setErrors({}) }}
-                className={`rounded-lg border bg-white p-3 text-left transition hover:border-blue-400 hover:bg-blue-50 ${email === "admin@flowi.co" ? "border-blue-500 ring-2 ring-blue-100" : "border-slate-200"}`}
-              >
-                <span className="block text-sm font-semibold text-slate-900">Administrador</span>
-                <span className="mt-1 block text-xs text-slate-500">Acceso completo</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEmail("operador@flowi.co"); setPassword("Flowi2025"); setErrors({}) }}
-                className={`rounded-lg border bg-white p-3 text-left transition hover:border-blue-400 hover:bg-blue-50 ${email === "operador@flowi.co" ? "border-blue-500 ring-2 ring-blue-100" : "border-slate-200"}`}
-              >
-                <span className="block text-sm font-semibold text-slate-900">Operador</span>
-                <span className="mt-1 block text-xs text-slate-500">Acceso limitado</span>
-              </button>
-            </div>
-            <p className="mt-3 text-xs text-slate-400">Contraseña para ambos perfiles: Flowi2025</p>
+            <p className="text-sm text-slate-500">
+              Las cuentas las administra el equipo y usan los roles ADMIN, VENDEDOR o BODEGUERO.
+            </p>
           </div>
-          <p className="mt-8 text-center text-xs text-slate-400">Prototipo de validación de acceso según rol</p>
+          <p className="mt-8 text-center text-xs text-slate-400">Autenticación segura mediante el backend.</p>
         </div>
       </section>
     </main>

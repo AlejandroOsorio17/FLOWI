@@ -16,7 +16,7 @@ function ProtectedLayout() {
 
 function CentrosByRole() {
   const { role } = useAuth()
-  return role === "admin" ? <CentrosDistribucion /> : <AccessDenied />
+  return role === "ADMIN" ? <CentrosDistribucion /> : <AccessDenied />
 }
 
 export const router = createBrowserRouter([

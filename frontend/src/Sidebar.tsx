@@ -55,8 +55,12 @@ export default function Sidebar() {
   const { logout, role } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "No se pudo revocar la sesión en el servidor.")
+    }
     navigate("/login", { replace: true })
   }
 
@@ -101,7 +105,7 @@ export default function Sidebar() {
 
         {/* Nav items */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-          {navItems.filter((item) => !item.adminOnly || role === "admin").map(({ label, to, icon: Icon, exact }) => (
+          {navItems.filter((item) => !item.adminOnly || role === "ADMIN").map(({ label, to, icon: Icon, exact }) => (
             <NavLink
               key={to}
               to={to}
@@ -134,10 +138,10 @@ export default function Sidebar() {
         </nav>
         <div className="m-3 rounded-xl border border-white/10 p-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-[10px] font-bold text-white">{role === "admin" ? "AD" : "OP"}</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-[10px] font-bold text-white">{role === "ADMIN" ? "AD" : role === "VENDEDOR" ? "VE" : "BO"}</span>
             <div className="min-w-0">
-              <div className="truncate text-xs font-semibold text-white">{role === "admin" ? "Administrador" : "Operador"}</div>
-              <div className="truncate text-[10px] text-slate-400">{role === "admin" ? "Acceso completo" : "Acceso limitado"}</div>
+              <div className="truncate text-xs font-semibold text-white">{role === "ADMIN" ? "Administrador" : role === "VENDEDOR" ? "Vendedor" : "Bodeguero"}</div>
+              <div className="truncate text-[10px] text-slate-400">{role === "ADMIN" ? "Acceso completo" : "Acceso limitado"}</div>
             </div>
           </div>
           <button

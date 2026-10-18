@@ -11,7 +11,7 @@ export default function AccessDenied() {
         </span>
         <h1 className="mt-5 text-2xl font-bold text-slate-950">Acceso no autorizado</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Tu perfil de Operador no cuenta con los permisos necesarios para acceder a esta funcionalidad.
+          Tu perfil no cuenta con los permisos necesarios para acceder a esta funcionalidad.
         </p>
         <button onClick={() => navigate("/", { replace: true })} className="mt-6 h-10 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700">
           Volver al inicio

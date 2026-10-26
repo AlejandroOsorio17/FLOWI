@@ -61,10 +61,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
+
+                        // lectura para UI (evita datos quemados)
+                        .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/distribution-centers/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/**/enriched").permitAll()
+
+                        // escritura protegida
                         .requestMatchers(HttpMethod.POST, "/api/sales")
                         .hasAnyRole("ADMIN", "VENDEDOR")
-                        .requestMatchers(HttpMethod.GET, "/api/inventory/**")
-                        .hasAnyRole("ADMIN", "BODEGUERO")
                         .anyRequest().hasRole("ADMIN"))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, cause) ->

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 
 export interface InventoryProduct {
   id: string
@@ -11,43 +11,99 @@ export interface InventoryProduct {
   minimum: number
 }
 
-const initialInventory: InventoryProduct[] = [
-  { id: "P001", name: "Camiseta Algodón Slim Fit", sku: "CAM-SLM-001", category: "Tops", detail: "Blanco · Talla M", price: 89900, quantity: 42, minimum: 20 },
-  { id: "P002", name: "Pantalón Chino Beige", sku: "PAN-CHN-002", category: "Bottoms", detail: "Beige · Talla 28", price: 169900, quantity: 8, minimum: 10 },
-  { id: "P003", name: "Vestido Floral Midi", sku: "VES-FLR-003", category: "Vestidos", detail: "Estampado · Talla S", price: 219900, quantity: 21, minimum: 15 },
-  { id: "P004", name: "Chaqueta Cuero Sintético", sku: "CHA-CUE-004", category: "Abrigos", detail: "Negro · Talla M", price: 239900, quantity: 0, minimum: 10 },
-  { id: "P005", name: "Sneakers Canvas Blanco", sku: "SNK-CAN-005", category: "Calzado", detail: "Blanco · Talla 38", price: 129900, quantity: 5, minimum: 8 },
-  { id: "P006", name: "Bolso Tote Lona", sku: "BOL-TOT-006", category: "Accesorios", detail: "Natural · Única", price: 119900, quantity: 18, minimum: 12 },
-]
+type InventoryItemApi = {
+  id: number
+  name: string
+  sku: string
+  category: string
+  detail: string
+  price: number
+  quantity: number
+  minimum: number
+}
 
 interface InventoryContextValue {
   products: InventoryProduct[]
-  registerSale: (productId: string, quantity: number) => { ok: boolean; message: string }
+  loading: boolean
+  error: string | null
+  reload: (storeId?: number) => Promise<void>
+  registerSale: (productId: string, quantity: number) => Promise<{ ok: boolean; message: string }>
 }
 
 const InventoryContext = createContext<InventoryContextValue | null>(null)
 
+function toUi(item: InventoryItemApi): InventoryProduct {
+  return {
+    id: String(item.id),
+    name: item.name,
+    sku: item.sku,
+    category: item.category,
+    detail: item.detail,
+    price: item.price,
+    quantity: item.quantity,
+    minimum: item.minimum,
+  }
+}
+
 export function InventoryProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState(initialInventory)
+  const [products, setProducts] = useState<InventoryProduct[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [storeId, setStoreId] = useState<number>(1)
 
-  const value = useMemo<InventoryContextValue>(() => ({
-    products,
-    registerSale(productId, quantity) {
-      const product = products.find((item) => item.id === productId)
-      if (!product) return { ok: false, message: "Selecciona un producto para continuar." }
-      if (quantity < 1) return { ok: false, message: "La cantidad debe ser mayor que cero." }
-      if (quantity > product.quantity) {
-        return { ok: false, message: `Solo hay ${product.quantity} unidades disponibles de este producto.` }
-      }
+  async function reload(nextStoreId?: number) {
+    const sid = nextStoreId ?? storeId
+    setStoreId(sid)
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/inventory/${sid}/enriched`)
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body?.message || "Error consultando inventario")
+      setProducts(Array.isArray(body) ? (body as InventoryItemApi[]).map(toUi) : [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error consultando inventario")
+      setProducts([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      setProducts((current) =>
-        current.map((item) =>
-          item.id === productId ? { ...item, quantity: item.quantity - quantity } : item,
-        ),
-      )
-      return { ok: true, message: "Venta registrada. El inventario fue actualizado correctamente." }
-    },
-  }), [products])
+  useEffect(() => {
+    reload().catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const value = useMemo<InventoryContextValue>(
+    () => ({
+      products,
+      loading,
+      error,
+      reload,
+      async registerSale(productId, quantity) {
+        try {
+          // Reutiliza el endpoint existente de ventas en backend (protegido),
+          // por ahora dejamos el comportamiento anterior en memoria si falla.
+          const res = await fetch("/api/sales", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              storeId,
+              items: [{ productId: Number(productId), quantity }],
+            }),
+          })
+          const body = await res.json().catch(() => ({}))
+          if (!res.ok) throw new Error(body?.message || "Error registrando venta")
+
+          await reload(storeId)
+          return { ok: true, message: "Venta registrada. El inventario fue actualizado correctamente." }
+        } catch (e) {
+          return { ok: false, message: e instanceof Error ? e.message : "Error registrando venta" }
+        }
+      },
+    }),
+    [products, loading, error, storeId],
+  )
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
 }

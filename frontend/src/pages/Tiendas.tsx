@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router"
 import Inventario from "./Inventario"
 import RegistrarVenta from "./RegistrarVenta"
+import IngresarStock from "./IngresarStock"
 import { apiFetch } from "../api"
 import { useInventory } from "../data/InventoryContext"
 import { useStoreSelection, type SelectedStore } from "../data/StoreSelectionContext"
@@ -81,7 +82,7 @@ export default function Tiendas() {
             ← Volver a tiendas
           </button>
         </div>
-        {view === "inventory" ? <Inventario /> : <RegistrarVenta />}
+        {view === "inventory" ? <Inventario /> : view === "sale" ? <RegistrarVenta /> : <IngresarStock />}
       </div>
     )
   }
@@ -155,7 +156,7 @@ export default function Tiendas() {
               >
                 Registrar venta
               </button>
-              {canManageStock && false && (
+              {canManageStock && (
                 <button
                   disabled={estado !== "Activa"}
                   onClick={() => goTo("stock", { id, code, name, city })}

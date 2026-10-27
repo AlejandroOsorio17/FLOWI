@@ -1,53 +1,101 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Badge, Field, EmptyState, Toast, Header, FormPanel, type View } from "../components/SharedUI"
+import { apiFetch, ApiError } from "../api"
+import { formatCurrency } from "../data/InventoryContext"
 import Disponibilidad from "./Disponibilidad"
 
-interface Producto {
-  id: string
-  nombre: string
-  sku: string
-  categoria: string
-  unidad: string
-  precioBase: number
-  stockMinimo: number
+interface ProductoApi {
+  id: number
+  code: string
+  name: string
+  description: string
+  price: number
+  category: string | null
+  unit: string | null
+  minimumStock: number | null
 }
-
-const seedProductos: Producto[] = [
-  { id: "P001", nombre: "Camiseta Algodón Slim Fit", sku: "CAM-SLM-001", categoria: "Tops", unidad: "unidad", precioBase: 29.9, stockMinimo: 50 },
-  { id: "P002", nombre: "Pantalón Chino Beige", sku: "PAN-CHN-002", categoria: "Bottoms", unidad: "unidad", precioBase: 49.9, stockMinimo: 30 },
-  { id: "P003", nombre: "Vestido Floral Midi", sku: "VES-FLR-003", categoria: "Dresses", unidad: "unidad", precioBase: 64.9, stockMinimo: 25 },
-  { id: "P004", nombre: "Chaqueta Cuero Sintético", sku: "CHA-CUE-004", categoria: "Outerwear", unidad: "unidad", precioBase: 89.9, stockMinimo: 20 },
-  { id: "P005", nombre: "Sneakers Canvas Blanco", sku: "SNK-CAN-005", categoria: "Calzado", unidad: "par", precioBase: 39.9, stockMinimo: 40 },
-]
 
 export default function Productos() {
   const [view, setView] = useState<View>("list")
   const [showAvailability, setShowAvailability] = useState(false)
-  const [productos, setProductos] = useState<Producto[]>(seedProductos)
+  const [productos, setProductos] = useState<ProductoApi[]>([])
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null)
   const [errors, setErrors] = useState<Record<string, boolean>>({})
-  const [form, setForm] = useState({ nombre: "", sku: "", categoria: "", unidad: "", precioBase: "", stockMinimo: "" })
+  const [form, setForm] = useState({
+    nombre: "",
+    sku: "",
+    descripcion: "",
+    categoria: "",
+    unidad: "",
+    precioBase: "",
+    stockMinimo: "",
+  })
 
   const categorias = ["Tops", "Bottoms", "Dresses", "Outerwear", "Calzado", "Accesorios"]
   const unidades = ["unidad", "par", "caja", "kg"]
 
-  const showToast = (msg: string, type: "success" | "error") => {
-    setToast({ msg, type })
-    setTimeout(() => setToast(null), 3000)
+  async function loadProducts() {
+    setLoading(true)
+    setLoadError(null)
+    try {
+      const res = await apiFetch("/api/products")
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body?.message || body?.error || "Error consultando productos")
+      setProductos(Array.isArray(body) ? (body as ProductoApi[]) : [])
+    } catch (e) {
+      setLoadError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "Error consultando productos")
+      setProductos([])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleSubmit = () => {
-    const required = ["nombre", "sku", "categoria", "unidad", "precioBase"]
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const showToast = (msg: string, type: "success" | "error") => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 5000)
+  }
+
+  const handleSubmit = async () => {
+    const required = ["nombre", "sku", "descripcion", "precioBase"]
     const errs: Record<string, boolean> = {}
     required.forEach((k) => { if (!form[k as keyof typeof form]) errs[k] = true })
     if (Object.keys(errs).length) { setErrors(errs); showToast("Completa los campos requeridos.", "error"); return }
-    if (productos.some((p) => p.sku === form.sku)) { showToast("Ya existe un producto con ese SKU.", "error"); return }
-    const id = `P${String(productos.length + 1).padStart(3, "0")}`
-    setProductos([...productos, { ...form, id, precioBase: +form.precioBase, stockMinimo: +form.stockMinimo || 0 }])
-    setForm({ nombre: "", sku: "", categoria: "", unidad: "", precioBase: "", stockMinimo: "" })
-    setErrors({})
-    setView("list")
-    showToast("Producto registrado exitosamente.", "success")
+
+    try {
+      const res = await apiFetch("/api/products", {
+        method: "POST",
+        body: JSON.stringify({
+          code: form.sku,
+          name: form.nombre,
+          description: form.descripcion,
+          price: Number(form.precioBase),
+          category: form.categoria || null,
+          unit: form.unidad || null,
+          minimumStock: form.stockMinimo ? Number(form.stockMinimo) : null,
+        }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (res.status === 409) throw new Error(body?.message || "Ya existe un producto con ese código.")
+        if (res.status === 422) throw new Error(body?.message || "Datos inválidos. Revisa los campos del formulario.")
+        throw new Error(body?.message || body?.error || "Error registrando producto")
+      }
+
+      setForm({ nombre: "", sku: "", descripcion: "", categoria: "", unidad: "", precioBase: "", stockMinimo: "" })
+      setErrors({})
+      setView("list")
+      showToast("Producto registrado exitosamente.", "success")
+      await loadProducts()
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : e instanceof Error ? e.message : "Error registrando producto"
+      showToast(message, "error")
+    }
   }
 
   const f = (k: keyof typeof form) => ({
@@ -76,13 +124,21 @@ export default function Productos() {
       {toast && <Toast message={toast.msg} type={toast.type} />}
       <Header
         title="Productos"
-        subtitle={`${productos.length} productos registrados`}
+        subtitle={loading ? "Cargando..." : loadError ? "Error cargando productos" : `${productos.length} productos registrados`}
         view={view}
         onToggle={() => setView(view === "list" ? "register" : "list")}
       />
 
       {view === "list" ? (
-        productos.length === 0 ? (
+        loading ? (
+          <div className="px-6 py-10 text-sm" style={{ color: "#6b5a3e" }}>
+            Cargando productos...
+          </div>
+        ) : loadError ? (
+          <div className="px-6 py-10 text-sm" style={{ color: "#7a3a3a" }}>
+            {loadError}
+          </div>
+        ) : productos.length === 0 ? (
           <EmptyState
             icon="▦"
             title="No existen productos registrados"
@@ -122,12 +178,12 @@ export default function Productos() {
                     onMouseLeave={(e) => { ;(e.currentTarget as HTMLElement).style.backgroundColor = i % 2 === 0 ? "transparent" : "#ede8df" }}
                   >
                     <td className="px-6 py-3 text-xs font-medium" style={{ color: "#5a4a30" }}>{p.id}</td>
-                    <td className="px-6 py-3 font-semibold" style={{ color: "#3d2e14" }}>{p.nombre}</td>
-                    <td className="px-6 py-3 text-xs" style={{ color: "#8a7a60" }}>{p.sku}</td>
-                    <td className="px-6 py-3"><Badge color="blue">{p.categoria}</Badge></td>
-                    <td className="px-6 py-3 text-sm" style={{ color: "#6b5a3e" }}>{p.unidad}</td>
-                    <td className="px-6 py-3 text-sm font-semibold" style={{ color: "#3a6b47" }}>${p.precioBase.toFixed(2)}</td>
-                    <td className="px-6 py-3 text-xs" style={{ color: "#8a7a60" }}>{p.stockMinimo}</td>
+                    <td className="px-6 py-3 font-semibold" style={{ color: "#3d2e14" }}>{p.name}</td>
+                    <td className="px-6 py-3 text-xs" style={{ color: "#8a7a60" }}>{p.code}</td>
+                    <td className="px-6 py-3"><Badge color="blue">{p.category ?? "N/A"}</Badge></td>
+                    <td className="px-6 py-3 text-sm" style={{ color: "#6b5a3e" }}>{p.unit ?? "-"}</td>
+                    <td className="px-6 py-3 text-sm font-semibold" style={{ color: "#3a6b47" }}>{formatCurrency(p.price)}</td>
+                    <td className="px-6 py-3 text-xs" style={{ color: "#8a7a60" }}>{p.minimumStock ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -145,16 +201,18 @@ export default function Productos() {
               <Field label="SKU" placeholder="Ej. CAM-SLM-001" required {...f("sku")} />
               {errors.sku && <p className="text-[10px] mt-1" style={{ color: "#7a3a3a" }}>Campo requerido</p>}
             </div>
-            <div>
-              <Field label="Categoría" required select options={categorias} {...f("categoria")} />
-              {errors.categoria && <p className="text-[10px] mt-1" style={{ color: "#7a3a3a" }}>Campo requerido</p>}
+            <div className="sm:col-span-2">
+              <Field label="Descripción" placeholder="Ej. Camiseta de algodón 100%, corte slim fit" required {...f("descripcion")} />
+              {errors.descripcion && <p className="text-[10px] mt-1" style={{ color: "#7a3a3a" }}>Campo requerido</p>}
             </div>
             <div>
-              <Field label="Unidad de medida" required select options={unidades} {...f("unidad")} />
-              {errors.unidad && <p className="text-[10px] mt-1" style={{ color: "#7a3a3a" }}>Campo requerido</p>}
+              <Field label="Categoría" select options={categorias} {...f("categoria")} />
             </div>
             <div>
-              <Field label="Precio base (USD)" type="number" placeholder="0.00" required {...f("precioBase")} />
+              <Field label="Unidad de medida" select options={unidades} {...f("unidad")} />
+            </div>
+            <div>
+              <Field label="Precio base (COP)" type="number" placeholder="0" required {...f("precioBase")} />
               {errors.precioBase && <p className="text-[10px] mt-1" style={{ color: "#7a3a3a" }}>Campo requerido</p>}
             </div>
             <div>

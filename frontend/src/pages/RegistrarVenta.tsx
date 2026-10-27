@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { PageHeading, SearchIcon, StoreIcon } from "../components/SprintUI"
 import { formatCurrency, useInventory } from "../data/InventoryContext"
+import { useStoreSelection } from "../data/StoreSelectionContext"
 
 function CartIcon() {
   return <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L20.5 8H6.3" /><circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></svg>
@@ -8,6 +9,7 @@ function CartIcon() {
 
 export default function RegistrarVenta() {
   const { products, registerSale } = useInventory()
+  const { selectedStore } = useStoreSelection()
   const available = products.filter((product) => product.quantity > 0)
   const [selectedId, setSelectedId] = useState(available[0]?.id ?? "")
   const [quantity, setQuantity] = useState(1)
@@ -19,10 +21,11 @@ export default function RegistrarVenta() {
   ), [products, query])
   const total = (selected?.price ?? 0) * quantity
 
-  const confirmSale = () => {
-    const result = registerSale(selectedId, quantity)
+  const confirmSale = async () => {
+    const result = await registerSale(selectedId, quantity)
     setNotice({ type: result.ok ? "success" : "error", message: result.message })
     if (result.ok) setQuantity(1)
+    setTimeout(() => setNotice(null), 5000)
   }
 
   return (
@@ -32,7 +35,7 @@ export default function RegistrarVenta() {
           eyebrow={<span className="text-slate-500">Ventas <span className="mx-2">›</span> <span className="text-slate-800">Nueva venta</span></span>}
           title="Registrar venta"
           subtitle="Selecciona el producto y confirma la cantidad vendida."
-          action={<div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm"><StoreIcon className="h-5 w-5 text-slate-500" /><div><div className="text-xs font-semibold text-slate-800">Tienda El Poblado</div><div className="text-[11px] text-slate-500">MED-001</div></div></div>}
+          action={<div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm"><StoreIcon className="h-5 w-5 text-slate-500" /><div><div className="text-xs font-semibold text-slate-800">{selectedStore?.name ?? "Tienda no seleccionada"}</div><div className="text-[11px] text-slate-500">{selectedStore?.code ?? "-"}</div></div></div>}
         />
 
         {notice && <div className={`mt-5 rounded-xl border px-4 py-3 text-sm font-medium ${notice.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>{notice.message}</div>}

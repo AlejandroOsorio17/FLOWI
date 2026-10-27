@@ -1,21 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
+import { API_BASE_URL } from "../api"
 
 const TOKEN_KEY = "flowi-token"
 const ROLE_KEY = "flowi-role"
-
-function getApiBaseUrl() {
-  // Nota: en Vite el tipo correcto es import.meta.env, pero si tu TS config/typings
-  // no lo reconoce aún, usamos "any" para evitar que el build se rompa.
-  const viteEnv = (import.meta as any).env as Record<string, string | undefined> | undefined
-  const base = (viteEnv?.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "")
-  if (!base) {
-    // Fallback útil en desarrollo si olvidan definir VITE_API_BASE_URL
-    return "http://localhost:8080"
-  }
-  return base
-}
-
-const API_BASE_URL = getApiBaseUrl()
 
 export type UserRole = "ADMIN" | "VENDEDOR" | "BODEGUERO"
 

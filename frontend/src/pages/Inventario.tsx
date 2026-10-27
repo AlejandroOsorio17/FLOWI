@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react"
 import { AlertIcon, BoxIcon, PageHeading, SearchIcon, StatusPill, StoreIcon } from "../components/SprintUI"
 import { getInventoryStatus, useInventory } from "../data/InventoryContext"
+import { useStoreSelection } from "../data/StoreSelectionContext"
 
 type Filter = "Todos" | "Disponibles" | "Stock bajo" | "Agotados"
 
 export default function Inventario() {
   const { products, loading, error } = useInventory()
+  const { selectedStore } = useStoreSelection()
   const [query, setQuery] = useState("")
   const [filter, setFilter] = useState<Filter>("Todos")
   const total = products.reduce((sum, product) => sum + product.quantity, 0)
@@ -27,7 +29,12 @@ export default function Inventario() {
     <div className="min-h-full bg-slate-50 px-5 py-7 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-6xl">
         <PageHeading
-          eyebrow={<span className="inline-flex items-center gap-2"><StoreIcon className="h-4 w-4" /> Tienda Medellín Poblado</span>}
+          eyebrow={
+            <span className="inline-flex items-center gap-2">
+              <StoreIcon className="h-4 w-4" />
+              {selectedStore ? `${selectedStore.name} (${selectedStore.code})` : "Tienda no seleccionada"}
+            </span>
+          }
           title="Inventario de tienda"
           subtitle="Consulta las existencias disponibles e identifica los productos que necesitan reposición."
           action={
@@ -102,7 +109,12 @@ export default function Inventario() {
                 })}
               </tbody>
             </table>
-            {filtered.length === 0 && <div className="px-5 py-12 text-center text-sm text-slate-500">No hay productos que coincidan con la búsqueda.</div>}
+            {!loading && !error && products.length === 0 && (
+              <div className="px-5 py-12 text-center text-sm text-slate-500">Sin inventario registrado</div>
+            )}
+            {!loading && !error && products.length > 0 && filtered.length === 0 && (
+              <div className="px-5 py-12 text-center text-sm text-slate-500">No hay productos que coincidan con la búsqueda.</div>
+            )}
           </div>
         </section>
       </div>

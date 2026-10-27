@@ -3,6 +3,7 @@ package com.example.demo1.infrastructure.adapter.out.persistence;
 import java.util.Optional;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import com.example.demo1.domain.port.out.InventoryRepository;
@@ -58,5 +59,33 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     @Override
     public List<InventoryItem> findLowStockByStore(Long storeId, int threshold) {
         return jpaRepository.findLowStockByStore(storeId, threshold);
+    }
+
+    @Override
+    public int addStock(Long storeId, Long productId, int quantity) {
+        var existing = jpaRepository.findByStoreIdAndProductId(storeId, productId);
+        if (existing.isPresent()) {
+            var entity = existing.get();
+            int newQuantity = entity.getCantidad() + quantity;
+            entity.setCantidad(newQuantity);
+            jpaRepository.save(entity);
+            return newQuantity;
+        }
+        try {
+            var entity = new InventarioJpaEntity();
+            entity.setStoreId(storeId);
+            entity.setProductId(productId);
+            entity.setCantidad(quantity);
+            jpaRepository.save(entity);
+            return quantity;
+        } catch (DataIntegrityViolationException ex) {
+            // Carrera: otra petición creó la fila entre el findBy y el save. Reintenta como incremento.
+            var raceExisting = jpaRepository.findByStoreIdAndProductId(storeId, productId)
+                    .orElseThrow(() -> ex);
+            int newQuantity = raceExisting.getCantidad() + quantity;
+            raceExisting.setCantidad(newQuantity);
+            jpaRepository.save(raceExisting);
+            return newQuantity;
+        }
     }
 }

@@ -27,7 +27,8 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponse> registerProduct(@RequestBody ProductRequest request) {
         Product product = service.registerProduct(new Product(null, request.getCode(), request.getName(),
-                request.getDescription(), request.getPrice()));
+                request.getDescription(), request.getPrice(), request.getCategory(),
+                request.getUnit(), request.getMinimumStock()));
         return ResponseEntity.status(201).body(toResponse(product));
     }
 
@@ -42,6 +43,7 @@ public class ProductController {
 
     private ProductResponse toResponse(Product product) {
         return new ProductResponse(product.getId(), product.getCode(), product.getName(),
-                product.getDescription(), product.getPrice());
+                product.getDescription(), product.getPrice(), product.getCategory(),
+                product.getUnit(), product.getMinimumStock());
     }
 }

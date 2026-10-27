@@ -17,28 +17,31 @@ public class ProductJpaEntity {
     private String name;
     private String description;
     private String category;
+    private String unit;
     private Integer minimum;
     private Double price;
 
     public ProductJpaEntity() {
     }
 
-    public ProductJpaEntity(Long id, String code, String name, String description, String category, Integer minimum, Double price) {
+    public ProductJpaEntity(Long id, String code, String name, String description, String category,
+            String unit, Integer minimum, Double price) {
         this.id = id;
         this.code = code;
         this.name = name;
         this.description = description;
         this.category = category;
+        this.unit = unit;
         this.minimum = minimum;
         this.price = price;
     }
 
     /**
-     * Overload retrocompatible: el dominio Product aún no tiene category/minimum,
-     * así que se dejan en null (la query enriquecida hace COALESCE a valores por defecto).
+     * Overload retrocompatible: deja category/unit/minimum en null
+     * (la query enriquecida hace COALESCE a valores por defecto).
      */
     public ProductJpaEntity(Long id, String code, String name, String description, Double price) {
-        this(id, code, name, description, null, null, price);
+        this(id, code, name, description, null, null, null, price);
     }
 
     public Long getId() { return id; }
@@ -51,6 +54,8 @@ public class ProductJpaEntity {
     public void setDescription(String description) { this.description = description; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    public String getUnit() { return unit; }
+    public void setUnit(String unit) { this.unit = unit; }
     public Integer getMinimum() { return minimum; }
     public void setMinimum(Integer minimum) { this.minimum = minimum; }
     public Double getPrice() { return price; }

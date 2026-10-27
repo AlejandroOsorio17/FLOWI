@@ -20,4 +20,10 @@ public interface InventoryRepository {
     void upsertQuantity(Long storeId, Long productId, int quantity);
 
     List<InventoryItem> findLowStockByStore(Long storeId, int threshold);
+
+    /**
+     * Suma 'quantity' al stock existente de (storeId, productId); si no hay fila, la crea.
+     * Retorna la cantidad total resultante.
+     */
+    int addStock(Long storeId, Long productId, int quantity);
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Badge, Field, EmptyState, Toast, Header, FormPanel, type View } from "../components/SharedUI"
+import { apiFetch, ApiError } from "../api"
 
 type BackendDistributionCenter = {
   id: number
@@ -43,9 +44,9 @@ export default function CentrosDistribucion() {
       setLoading(true)
       setLoadError(null)
       try {
-        const res = await fetch("/api/distribution-centers")
+        const res = await apiFetch("/api/distribution-centers")
         const body = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(body?.message || "Error consultando centros de distribución")
+        if (!res.ok) throw new Error(body?.message || body?.error || "Error consultando centros de distribución")
         if (!cancelled) setData(Array.isArray(body) ? (body as BackendDistributionCenter[]) : [])
       } catch (e) {
         if (!cancelled) setLoadError(e instanceof Error ? e.message : "Error consultando centros de distribución")
@@ -76,7 +77,7 @@ export default function CentrosDistribucion() {
 
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ msg, type })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 5000)
   }
 
   const handleSubmit = async () => {
@@ -92,9 +93,8 @@ export default function CentrosDistribucion() {
     }
 
     try {
-      const res = await fetch("/api/distribution-centers", {
+      const res = await apiFetch("/api/distribution-centers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: form.codigo,
           name: form.nombre,
@@ -103,7 +103,7 @@ export default function CentrosDistribucion() {
         }),
       })
       const body = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(body?.message || "Error registrando centro de distribución")
+      if (!res.ok) throw new Error(body?.message || body?.error || "Error registrando centro de distribución")
 
       // Recargar lista para no “quemar” estado local
       setView("list")
@@ -113,12 +113,13 @@ export default function CentrosDistribucion() {
 
       setLoading(true)
       setLoadError(null)
-      const refreshRes = await fetch("/api/distribution-centers")
+      const refreshRes = await apiFetch("/api/distribution-centers")
       const refreshBody = await refreshRes.json().catch(() => ({}))
-      if (!refreshRes.ok) throw new Error(refreshBody?.message || "Error actualizando centros")
+      if (!refreshRes.ok) throw new Error(refreshBody?.message || refreshBody?.error || "Error actualizando centros")
       setData(Array.isArray(refreshBody) ? (refreshBody as BackendDistributionCenter[]) : [])
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "Error registrando centro", "error")
+      const message = e instanceof ApiError ? e.message : e instanceof Error ? e.message : "Error registrando centro"
+      showToast(message, "error")
     } finally {
       setLoading(false)
     }

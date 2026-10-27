@@ -35,6 +35,9 @@ public class ProductService {
                 || product.getPrice() == null || product.getPrice() < 0) {
             throw new IllegalArgumentException("Code, name, description and a non-negative price are required");
         }
+        if (product.getMinimumStock() != null && product.getMinimumStock() < 0) {
+            throw new IllegalArgumentException("Minimum stock must be greater than or equal to zero");
+        }
     }
 
     private boolean isBlank(String value) {

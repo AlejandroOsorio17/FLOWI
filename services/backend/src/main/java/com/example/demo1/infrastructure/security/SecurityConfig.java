@@ -76,6 +76,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/inventory/**")
                         .hasAnyRole("ADMIN", "BODEGUERO")
 
+                        // inventario: ingreso de stock (suma cantidad existente o crea fila)
+                        .requestMatchers(HttpMethod.POST, "/api/inventory")
+                        .hasAnyRole("ADMIN", "BODEGUERO")
+
                         .anyRequest().hasRole("ADMIN"))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, cause) ->

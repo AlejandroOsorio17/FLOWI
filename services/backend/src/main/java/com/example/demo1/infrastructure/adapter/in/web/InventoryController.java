@@ -2,8 +2,12 @@ package com.example.demo1.infrastructure.adapter.in.web;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo1.application.service.InventoryService;
 import com.example.demo1.domain.InventoryItem;
+import com.example.demo1.infrastructure.adapter.in.web.dto.AddStockRequest;
+import com.example.demo1.infrastructure.adapter.in.web.dto.AddStockResponse;
 import com.example.demo1.infrastructure.adapter.in.web.dto.InventoryUpsertRequest;
 
 @RestController
@@ -49,5 +55,16 @@ public class InventoryController {
             @PathVariable Long storeId,
             @RequestParam(defaultValue = "10") int threshold) {
         return inventoryService.getLowStockByStore(storeId, threshold);
+    }
+
+    /**
+     * Ingresa stock: suma 'quantity' al stock existente de (storeId, productId);
+     * si no hay fila, la crea.
+     */
+    @PostMapping
+    public ResponseEntity<AddStockResponse> addStock(@Valid @RequestBody AddStockRequest request) {
+        AddStockResponse response = inventoryService.addStock(
+                request.getStoreId(), request.getProductId(), request.getQuantity());
+        return ResponseEntity.status(201).body(response);
     }
 }

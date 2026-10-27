@@ -8,4 +8,5 @@ public interface StoreRepository {
     Store save(Store store);
     List<Store> findAll();
     boolean existsByCode(String code);
+    boolean existsById(Long id);
 }

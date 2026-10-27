@@ -30,6 +30,11 @@ public class StoreRepositoryImpl implements StoreRepository {
         return repository.existsByCode(code);
     }
 
+    @Override
+    public boolean existsById(Long id) {
+        return repository.existsById(id);
+    }
+
     private StoreJpaEntity toEntity(Store store) {
         return new StoreJpaEntity(store.getId(), store.getCode(), store.getName(),
                 store.getAddress(), store.getCity());

@@ -46,6 +46,31 @@ function toUi(item: InventoryItemApi): InventoryProduct {
   }
 }
 
+function extractSaleErrorMessage(status: number, body: any): string {
+  if (status === 409) {
+    const disponible = body?.disponible
+    const solicitado = body?.solicitado
+    if (disponible !== undefined && solicitado !== undefined) {
+      return `Stock insuficiente: disponibles ${disponible}, solicitados ${solicitado}`
+    }
+    return body?.message || "Stock insuficiente"
+  }
+  if (status === 403) {
+    return "No tienes permiso"
+  }
+  if (status === 400) {
+    const campos = body?.campos
+    if (campos && typeof campos === "object") {
+      const detalle = Object.entries(campos)
+        .map(([campo, msg]) => `${campo}: ${msg}`)
+        .join(" · ")
+      if (detalle) return detalle
+    }
+    return body?.message || "Datos inválidos"
+  }
+  return body?.message || body?.error || "Error registrando venta"
+}
+
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<InventoryProduct[]>([])
   const [loading, setLoading] = useState(false)
@@ -86,11 +111,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             method: "POST",
             body: JSON.stringify({
               storeId,
-              items: [{ productId: Number(productId), quantity }],
+              items: [{ productId: Number(productId), cantidad: quantity }],
             }),
           })
           const body = await res.json().catch(() => ({}))
-          if (!res.ok) throw new Error(body?.message || "Error registrando venta")
+          if (!res.ok) {
+            const message = extractSaleErrorMessage(res.status, body)
+            return { ok: false, message }
+          }
 
           await reload(storeId)
           return { ok: true, message: "Venta registrada. El inventario fue actualizado correctamente." }

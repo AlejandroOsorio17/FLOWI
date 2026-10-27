@@ -15,6 +15,7 @@ export default function RegistrarVenta() {
   const [quantity, setQuantity] = useState(1)
   const [query, setQuery] = useState("")
   const [notice, setNotice] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const selected = products.find((product) => product.id === selectedId)
   const visibleProducts = useMemo(() => products.filter((product) =>
     `${product.name} ${product.sku}`.toLowerCase().includes(query.toLowerCase()),
@@ -22,10 +23,16 @@ export default function RegistrarVenta() {
   const total = (selected?.price ?? 0) * quantity
 
   const confirmSale = async () => {
-    const result = await registerSale(selectedId, quantity)
-    setNotice({ type: result.ok ? "success" : "error", message: result.message })
-    if (result.ok) setQuantity(1)
-    setTimeout(() => setNotice(null), 5000)
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      const result = await registerSale(selectedId, quantity)
+      setNotice({ type: result.ok ? "success" : "error", message: result.message })
+      if (result.ok) setQuantity(1)
+      setTimeout(() => setNotice(null), 5000)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -83,7 +90,9 @@ export default function RegistrarVenta() {
               {selected ? <div className="rounded-xl bg-slate-50 p-4"><div className="font-semibold text-slate-900">{selected.name}</div><div className="mt-1 text-xs text-slate-500">{selected.sku} · {selected.detail}</div><div className="my-4 border-t border-slate-200" /><div className="flex justify-between text-sm text-slate-500"><span>{quantity} × {formatCurrency(selected.price)}</span><strong className="text-slate-800">{formatCurrency(total)}</strong></div></div> : <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Selecciona un producto.</div>}
               <div className="space-y-3 border-b border-slate-100 py-5 text-sm"><div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">{formatCurrency(total)}</span></div><div className="flex justify-between text-slate-500"><span>Impuestos</span><span className="font-medium text-slate-700">Incluidos</span></div></div>
               <div className="flex items-center justify-between py-5"><span className="font-semibold text-slate-600">Total</span><strong className="text-2xl text-slate-950">{formatCurrency(total)}</strong></div>
-              <button onClick={confirmSale} disabled={!selected} className="h-11 w-full rounded-lg bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">✓ &nbsp; Confirmar venta</button>
+              <button onClick={confirmSale} disabled={!selected || submitting} className="h-11 w-full rounded-lg bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+                {submitting ? "Procesando..." : <>✓ &nbsp; Confirmar venta</>}
+              </button>
               <p className="mt-3 text-center text-[11px] text-slate-400">Al confirmar, el inventario se actualizará automáticamente.</p>
             </div>
           </aside>

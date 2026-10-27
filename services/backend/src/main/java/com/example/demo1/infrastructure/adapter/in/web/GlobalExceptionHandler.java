@@ -87,6 +87,19 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    // ── Recurso no encontrado ────────────────────────────────────────────────
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(
+            ResourceNotFoundException ex) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status",    404,
+                "error",     "Recurso no encontrado",
+                "message",   ex.getMessage()
+        ));
+    }
+
     // ── Fallback genérico ───────────────────────────────────────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {

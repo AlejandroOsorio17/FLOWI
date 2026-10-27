@@ -94,7 +94,7 @@ Configura estas variables en el servicio backend de Render:
 
 Si despliegas el frontend por separado (por ejemplo, en Vercel), configura en el
 proyecto frontend la variable `VITE_API_BASE_URL` con el origen del backend
-Render, por ejemplo `https://demo1-zbrl.onrender.com` (sin `/api` al final).
+Render, por ejemplo `https://flowi-backend-4rks.onrender.com` (sin `/api` al final).
 Vite incorpora esta variable durante el build, así que vuelve a desplegar el
 frontend después de cambiarla. En desarrollo local, el proxy de Vite enruta `/api`
 al backend configurado en `frontend/vite.config.ts`; con Docker Compose, Nginx

@@ -5,7 +5,7 @@ import { getInventoryStatus, useInventory } from "../data/InventoryContext"
 type Filter = "Todos" | "Disponibles" | "Stock bajo" | "Agotados"
 
 export default function Inventario() {
-  const { products } = useInventory()
+  const { products, loading, error } = useInventory()
   const [query, setQuery] = useState("")
   const [filter, setFilter] = useState<Filter>("Todos")
   const total = products.reduce((sum, product) => sum + product.quantity, 0)
@@ -38,6 +38,16 @@ export default function Inventario() {
           }
         />
 
+        {loading && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+            Cargando inventario...
+          </div>
+        )}
+        {!loading && error && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 shadow-sm">
+            {error}
+          </div>
+        )}
         <div className="grid gap-4 py-7 md:grid-cols-3">
           <Summary title="Unidades disponibles" value={total} note={`${products.length} productos registrados`} tone="blue"><BoxIcon className="h-5 w-5" /></Summary>
           <Summary title="Con stock bajo" value={low} note="Requieren reposición pronto" tone="amber"><AlertIcon className="h-5 w-5" /></Summary>

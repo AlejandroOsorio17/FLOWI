@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo1.domain.InventoryItem;
 import com.example.demo1.domain.port.out.InventoryRepository;
+import com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse;
 
 @Service
 public class InventoryService {
@@ -18,6 +19,10 @@ public class InventoryService {
 
     public List<InventoryItem> getInventoryByStore(Long storeId) {
         return inventoryRepository.findInventoryByStore(storeId);
+    }
+
+    public List<EnrichedInventoryItemResponse> getEnrichedInventoryByStore(Long storeId) {
+        return inventoryRepository.findEnrichedInventoryByStore(storeId);
     }
 
     public List<InventoryItem> getLowStockByStore(Long storeId, int threshold) {

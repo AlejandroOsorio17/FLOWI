@@ -16,6 +16,13 @@ public interface InventarioJpaRepository extends JpaRepository<InventarioJpaEnti
     List<com.example.demo1.domain.InventoryItem> findInventoryByStore(
             @Param("storeId") Long storeId);
 
+    @Query("SELECT new com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse(" +
+           "p.id, p.name, p.code, 'N/A', p.description, p.price, i.cantidad, 10) " +
+           "FROM InventarioJpaEntity i, ProductJpaEntity p " +
+           "WHERE i.productId = p.id AND i.storeId = :storeId")
+    List<com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse> findEnrichedInventoryByStore(
+            @Param("storeId") Long storeId);
+
     @Query("SELECT new com.example.demo1.domain.InventoryItem(i.productId, p.name, i.cantidad) " +
            "FROM InventarioJpaEntity i, ProductJpaEntity p " +
            "WHERE i.productId = p.id AND i.storeId = :storeId AND i.cantidad <= :threshold")

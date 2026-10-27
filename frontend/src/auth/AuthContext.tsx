@@ -2,13 +2,43 @@ import { createContext, useContext, useState, type ReactNode } from "react"
 
 const TOKEN_KEY = "flowi-token"
 const ROLE_KEY = "flowi-role"
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "")
+
+function getApiBaseUrl() {
+  // Nota: en Vite el tipo correcto es import.meta.env, pero si tu TS config/typings
+  // no lo reconoce aún, usamos "any" para evitar que el build se rompa.
+  const viteEnv = (import.meta as any).env as Record<string, string | undefined> | undefined
+  const base = (viteEnv?.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "")
+  if (!base) {
+    // Fallback útil en desarrollo si olvidan definir VITE_API_BASE_URL
+    return "http://localhost:8080"
+  }
+  return base
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 export type UserRole = "ADMIN" | "VENDEDOR" | "BODEGUERO"
 
 interface AuthResponse {
   token: string
   role: UserRole
+}
+
+async function readErrorMessage(response: Response) {
+  try {
+    const contentType = response.headers.get("content-type") ?? ""
+    if (contentType.includes("application/json")) {
+      const data = (await response.json()) as unknown
+      if (data && typeof data === "object" && "message" in data && typeof (data as any).message === "string") {
+        return (data as any).message as string
+      }
+      return JSON.stringify(data)
+    }
+    const text = await response.text()
+    return text || `HTTP ${response.status}`
+  } catch {
+    return `HTTP ${response.status}`
+  }
 }
 
 interface AuthContextValue {
@@ -43,12 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const login = async (username: string, password: string, remember: boolean) => {
+    const trimmedUsername = username.trim()
+    if (!trimmedUsername || !password) {
+      throw new Error("Debes ingresar usuario y contraseña.")
+    }
+
     let response: Response
     try {
       response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ username: trimmedUsername, password }),
       })
     } catch {
       throw new Error("No se pudo conectar con el servidor. Verifica la URL del backend e inténtalo de nuevo.")
@@ -58,11 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("El usuario o la contraseña no son válidos.")
     }
     if (!response.ok) {
-      throw new Error(`Error del servidor al iniciar sesión (HTTP ${response.status}).`)
+      const message = await readErrorMessage(response)
+      throw new Error(`Error del servidor al iniciar sesión: ${message}`)
     }
 
     const result = (await response.json()) as AuthResponse
-    if (!result.token || !["ADMIN", "VENDEDOR", "BODEGUERO"].includes(result.role)) {
+    if (!result?.token || !["ADMIN", "VENDEDOR", "BODEGUERO"].includes(result.role)) {
       throw new Error("El servidor devolvió una respuesta de inicio de sesión inválida.")
     }
 
@@ -77,13 +113,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     const currentToken = getStoredValue(TOKEN_KEY)
     try {
+      // Logout debe ser “best effort”: si el backend falla igual limpiamos estado local.
       if (currentToken) {
         const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
           method: "POST",
           headers: { Authorization: `Bearer ${currentToken}` },
         })
         if (!response.ok) {
-          throw new Error(`El backend no pudo revocar la sesión (HTTP ${response.status}).`)
+          // No bloquea el logout del usuario, pero deja un error útil en consola.
+          const message = await readErrorMessage(response)
+          console.warn(`El backend no pudo revocar la sesión: ${message}`)
         }
       }
     } finally {

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo1.domain.port.out.InventoryRepository;
 import com.example.demo1.domain.InventoryItem;
+import com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse;
 
 @Component
 public class InventoryRepositoryImpl implements InventoryRepository {
@@ -30,6 +31,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     @Override
     public List<InventoryItem> findInventoryByStore(Long storeId) {
         return jpaRepository.findInventoryByStore(storeId);
+    }
+
+    @Override
+    public List<EnrichedInventoryItemResponse> findEnrichedInventoryByStore(Long storeId) {
+        return jpaRepository.findEnrichedInventoryByStore(storeId);
     }
 
     @Override

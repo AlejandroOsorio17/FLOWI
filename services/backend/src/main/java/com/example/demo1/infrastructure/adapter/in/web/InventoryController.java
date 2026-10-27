@@ -26,6 +26,16 @@ public class InventoryController {
         return inventoryService.getInventoryByStore(storeId);
     }
 
+    /**
+     * Endpoint enriquecido para el frontend:
+     * devuelve {id,name,sku,category,detail,price,quantity,minimum}
+     */
+    @GetMapping("/{storeId}/enriched")
+    public List<com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse> getEnrichedInventory(
+            @PathVariable Long storeId) {
+        return inventoryService.getEnrichedInventoryByStore(storeId);
+    }
+
     @GetMapping("/{storeId}/low-stock")
     public List<InventoryItem> getLowStock(
             @PathVariable Long storeId,

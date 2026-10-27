@@ -17,5 +17,7 @@ public interface InventoryRepository {
 
     List<EnrichedInventoryItemResponse> findEnrichedInventoryByStore(Long storeId);
 
+    void upsertQuantity(Long storeId, Long productId, int quantity);
+
     List<InventoryItem> findLowStockByStore(Long storeId, int threshold);
 }

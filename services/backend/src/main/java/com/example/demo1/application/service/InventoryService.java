@@ -8,6 +8,8 @@ import com.example.demo1.domain.InventoryItem;
 import com.example.demo1.domain.port.out.InventoryRepository;
 import com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class InventoryService {
 
@@ -23,6 +25,14 @@ public class InventoryService {
 
     public List<EnrichedInventoryItemResponse> getEnrichedInventoryByStore(Long storeId) {
         return inventoryRepository.findEnrichedInventoryByStore(storeId);
+    }
+
+    @Transactional
+    public void upsertInventory(Long storeId, Long productId, int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa");
+        }
+        inventoryRepository.upsertQuantity(storeId, productId, quantity);
     }
 
     public List<InventoryItem> getLowStockByStore(Long storeId, int threshold) {

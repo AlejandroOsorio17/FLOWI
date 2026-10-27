@@ -17,7 +17,7 @@ public interface InventarioJpaRepository extends JpaRepository<InventarioJpaEnti
             @Param("storeId") Long storeId);
 
     @Query("SELECT new com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse(" +
-           "p.id, p.name, p.code, 'N/A', p.description, p.price, i.cantidad, 10) " +
+           "p.id, p.name, p.code, COALESCE(p.category, 'N/A'), p.description, p.price, i.cantidad, COALESCE(p.minimum, 10)) " +
            "FROM InventarioJpaEntity i, ProductJpaEntity p " +
            "WHERE i.productId = p.id AND i.storeId = :storeId")
     List<com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse> findEnrichedInventoryByStore(
@@ -40,4 +40,6 @@ public interface InventarioJpaRepository extends JpaRepository<InventarioJpaEnti
     void decrementCantidad(@Param("storeId") Long storeId,
                            @Param("productId") Long productId,
                            @Param("qty") int qty);
+
+    Optional<InventarioJpaEntity> findByStoreIdAndProductId(Long storeId, Long productId);
 }

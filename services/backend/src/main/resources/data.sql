@@ -37,3 +37,15 @@ WHERE NOT EXISTS (SELECT 1 FROM distribution_centers WHERE code = 'DC-BOG-001');
 INSERT INTO distribution_centers (code, name, address, city)
 SELECT 'DC-MDE-001', 'Medellin Distribution Center', 'Carrera 50 No. 14-20', 'Medellin'
 WHERE NOT EXISTS (SELECT 1 FROM distribution_centers WHERE code = 'DC-MDE-001');
+
+-- Inventario de prueba: relaciona cada tienda con cada producto, cantidad aleatoria (10-100).
+-- Idempotente: solo inserta combinaciones store_id+product_id que no existan todavía,
+-- así no sobreescribe cantidades ya ajustadas manualmente ni se duplica en cada arranque.
+INSERT INTO inventario (store_id, product_id, cantidad)
+SELECT s.id, p.id, floor(random() * 91 + 10)::int
+FROM stores s
+CROSS JOIN products p
+WHERE NOT EXISTS (
+    SELECT 1 FROM inventario i
+    WHERE i.store_id = s.id AND i.product_id = p.id
+);

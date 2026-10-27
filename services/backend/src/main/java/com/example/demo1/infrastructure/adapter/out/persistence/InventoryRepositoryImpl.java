@@ -39,6 +39,23 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     }
 
     @Override
+    public void upsertQuantity(Long storeId, Long productId, int quantity) {
+        // Upsert por store_id + product_id (hay unique constraint).
+        var existing = jpaRepository.findByStoreIdAndProductId(storeId, productId);
+        if (existing.isPresent()) {
+            var entity = existing.get();
+            entity.setCantidad(quantity);
+            jpaRepository.save(entity);
+        } else {
+            var entity = new InventarioJpaEntity();
+            entity.setStoreId(storeId);
+            entity.setProductId(productId);
+            entity.setCantidad(quantity);
+            jpaRepository.save(entity);
+        }
+    }
+
+    @Override
     public List<InventoryItem> findLowStockByStore(Long storeId, int threshold) {
         return jpaRepository.findLowStockByStore(storeId, threshold);
     }

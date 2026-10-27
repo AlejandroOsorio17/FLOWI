@@ -67,11 +67,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/distribution-centers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/inventory/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/inventory/**/enriched").permitAll()
 
                         // escritura protegida
                         .requestMatchers(HttpMethod.POST, "/api/sales")
                         .hasAnyRole("ADMIN", "VENDEDOR")
+
+                        // inventario: permitir cargar/ajustar inventario por tienda
+                        .requestMatchers(HttpMethod.PUT, "/api/inventory/**")
+                        .hasAnyRole("ADMIN", "BODEGUERO")
+
                         .anyRequest().hasRole("ADMIN"))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, cause) ->

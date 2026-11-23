@@ -83,9 +83,9 @@ Permisos visibles en la UI (frontend):
 
 ```mermaid
 flowchart LR
-  U[Usuario] -->|HTTPS| V[Vercel · React (Vite)]
-  V -->|Rewrite /api/*| R[Render · Spring Boot (Docker)]
-  R -->|JDBC| N[Neon · PostgreSQL]
+  U["Usuario"] -->|"HTTPS"| V["Vercel - React Vite"]
+  V -->|"Rewrite /api"| R["Render - Spring Boot Docker"]
+  R -->|"JDBC"| N["Neon - PostgreSQL"]
 ```
 
 ### Backend (arquitectura hexagonal)

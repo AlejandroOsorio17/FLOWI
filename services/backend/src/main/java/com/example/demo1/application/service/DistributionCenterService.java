@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo1.domain.DistributionCenter;
 import com.example.demo1.domain.port.out.DistributionCenterRepository;
-import com.example.demo1.infrastructure.adapter.in.web.DuplicateResourceException;
+import com.example.demo1.domain.exception.DuplicateResourceException;
 
 @Service
 public class DistributionCenterService {

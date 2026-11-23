@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
-import { apiFetch } from "../api"
+import { apiFetch } from "../services/api"
 
 export interface InventoryProduct {
   id: string

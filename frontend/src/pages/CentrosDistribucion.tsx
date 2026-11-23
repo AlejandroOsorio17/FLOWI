@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Badge, Field, EmptyState, Toast, Header, FormPanel, type View } from "../components/SharedUI"
-import { apiFetch, ApiError } from "../api"
+import { apiFetch, ApiError } from "../services/api"
 
 type BackendDistributionCenter = {
   id: number

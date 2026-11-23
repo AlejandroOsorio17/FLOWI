@@ -1,4 +1,4 @@
-package com.example.demo1.domain;
+package com.example.demo1.domain.exception;
 
 /** Excepción de dominio: stock insuficiente para completar la venta. */
 public class InsufficientStockException extends RuntimeException {

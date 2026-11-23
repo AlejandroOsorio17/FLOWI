@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { PageHeading, StoreIcon } from "../components/SprintUI"
-import { apiFetch, ApiError } from "../api"
-import { useInventory } from "../data/InventoryContext"
-import { useStoreSelection } from "../data/StoreSelectionContext"
+import { apiFetch, ApiError } from "../services/api"
+import { useInventory } from "../context/InventoryContext"
+import { useStoreSelection } from "../context/StoreSelectionContext"
 
 type ProductoApi = {
   id: number

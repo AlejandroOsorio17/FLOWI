@@ -12,7 +12,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.demo1.domain.InsufficientStockException;
+import com.example.demo1.domain.exception.DuplicateResourceException;
+import com.example.demo1.domain.exception.InsufficientStockException;
+import com.example.demo1.domain.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

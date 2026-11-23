@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import { API_BASE_URL } from "../api"
+import { API_BASE_URL } from "../services/api"
 
 const TOKEN_KEY = "flowi-token"
 const ROLE_KEY = "flowi-role"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Badge, Field, EmptyState, Toast, Header, FormPanel, type View } from "../components/SharedUI"
-import { apiFetch, ApiError } from "../api"
-import { formatCurrency } from "../data/InventoryContext"
+import { apiFetch, ApiError } from "../services/api"
+import { formatCurrency } from "../context/InventoryContext"
 import Disponibilidad from "./Disponibilidad"
 
 interface ProductoApi {

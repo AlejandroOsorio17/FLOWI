@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { AlertIcon, BoxIcon, PageHeading, SearchIcon, StatusPill, StoreIcon } from "../components/SprintUI"
-import { getInventoryStatus, useInventory } from "../data/InventoryContext"
-import { useStoreSelection } from "../data/StoreSelectionContext"
+import { getInventoryStatus, useInventory } from "../context/InventoryContext"
+import { useStoreSelection } from "../context/StoreSelectionContext"
 
 type Filter = "Todos" | "Disponibles" | "Stock bajo" | "Agotados"
 

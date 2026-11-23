@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo1.domain.InsufficientStockException;
+import com.example.demo1.domain.exception.InsufficientStockException;
 import com.example.demo1.domain.Sale;
 import com.example.demo1.domain.SaleItem;
 import com.example.demo1.domain.port.out.InventoryRepository;

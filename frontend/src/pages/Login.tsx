@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react"
 import { Navigate, useNavigate } from "react-router"
-import { useAuth } from "../auth/AuthContext"
+import { useAuth } from "../context/AuthContext"
 
 function FlowiMark() {
   return (

@@ -9,7 +9,7 @@ import com.example.demo1.domain.Product;
 import com.example.demo1.domain.port.out.InventoryRepository;
 import com.example.demo1.domain.port.out.ProductRepository;
 import com.example.demo1.domain.port.out.StoreRepository;
-import com.example.demo1.infrastructure.adapter.in.web.ResourceNotFoundException;
+import com.example.demo1.domain.exception.ResourceNotFoundException;
 import com.example.demo1.infrastructure.adapter.in.web.dto.AddStockResponse;
 import com.example.demo1.infrastructure.adapter.in.web.dto.EnrichedInventoryItemResponse;
 

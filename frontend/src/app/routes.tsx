@@ -1,13 +1,13 @@
 import { createBrowserRouter, Navigate } from "react-router"
-import Layout from "./Layout"
-import Welcome from "./pages/Welcome"
-import Productos from "./pages/Productos"
-import Tiendas from "./pages/Tiendas"
-import CentrosDistribucion from "./pages/CentrosDistribucion"
-import TiendasVacio from "./pages/TiendasVacio"
-import Login from "./pages/Login"
-import { useAuth } from "./auth/AuthContext"
-import AccessDenied from "./pages/AccessDenied"
+import Layout from "../layouts/Layout"
+import Welcome from "../pages/Welcome"
+import Productos from "../pages/Productos"
+import Tiendas from "../pages/Tiendas"
+import CentrosDistribucion from "../pages/CentrosDistribucion"
+import TiendasVacio from "../pages/TiendasVacio"
+import Login from "../pages/Login"
+import { useAuth } from "../context/AuthContext"
+import AccessDenied from "../pages/AccessDenied"
 
 function ProtectedLayout() {
   const { isAuthenticated } = useAuth()

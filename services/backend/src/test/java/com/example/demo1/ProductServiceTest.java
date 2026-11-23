@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.example.demo1.application.service.ProductService;
 import com.example.demo1.domain.Product;
 import com.example.demo1.domain.port.out.ProductRepository;
-import com.example.demo1.infrastructure.adapter.in.web.DuplicateResourceException;
+import com.example.demo1.domain.exception.DuplicateResourceException;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {

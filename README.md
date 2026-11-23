@@ -6,12 +6,23 @@ Aplicación web con frontend servido por Nginx, backend Spring Boot y PostgreSQL
 
 ```text
 demo1/
+├── docs/                          # Documentación (API de servicios, historias de usuario)
+├── frontend/                      # React + Vite + Tailwind
+│   └── src/
+│       ├── app/                   # App.tsx y routes.tsx
+│       ├── components/            # Componentes UI compartidos
+│       ├── context/               # Providers (auth, inventario, tienda seleccionada)
+│       ├── layouts/               # Layout y Sidebar
+│       ├── pages/                 # Pantallas por ruta
+│       ├── services/              # Cliente API (api.ts)
+│       ├── index.css
+│       └── main.tsx
 ├── services/
-│   └── backend/
-│       ├── src/
-│       ├── pom.xml
-│       └── Dockerfile
-├── frontend/
+│   └── backend/                   # Spring Boot (arquitectura hexagonal)
+│       └── src/main/java/com/example/demo1/
+│           ├── application/       # Servicios de aplicación
+│           ├── domain/            # Entidades, excepciones (exception/) y puertos (port/out/)
+│           └── infrastructure/    # Adaptadores web (in/), persistencia (out/) y seguridad
 ├── docker-compose.yml
 └── README.md
 ```

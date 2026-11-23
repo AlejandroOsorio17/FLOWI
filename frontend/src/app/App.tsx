@@ -1,8 +1,8 @@
 import { RouterProvider } from "react-router"
 import { router } from "./routes"
-import { InventoryProvider } from "./data/InventoryContext"
-import { AuthProvider } from "./auth/AuthContext"
-import { StoreSelectionProvider } from "./data/StoreSelectionContext"
+import { InventoryProvider } from "../context/InventoryContext"
+import { AuthProvider } from "../context/AuthContext"
+import { StoreSelectionProvider } from "../context/StoreSelectionContext"
 
 export default function App() {
   return (

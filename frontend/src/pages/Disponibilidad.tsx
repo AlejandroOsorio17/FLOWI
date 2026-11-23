@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { AlertIcon, PageHeading, SearchIcon } from "../components/SprintUI"
-import { getInventoryStatus, useInventory } from "../data/InventoryContext"
+import { getInventoryStatus, useInventory } from "../context/InventoryContext"
 
 export default function Disponibilidad() {
   const { products } = useInventory()

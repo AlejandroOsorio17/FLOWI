@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -44,6 +46,32 @@ public class GlobalExceptionHandler {
                 "status",    400,
                 "error",     "Datos inválidos",
                 "campos",    fieldErrors
+        ));
+    }
+
+    // ── Parámetro obligatorio ausente ───────────────────────────────────────
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingParameter(
+            MissingServletRequestParameterException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status",    400,
+                "error",     "Parámetro obligatorio ausente",
+                "message",   "Falta el parámetro '" + ex.getParameterName() + "'"
+        ));
+    }
+
+    // ── Parámetro con tipo inválido (p. ej. storeId no numérico) ────────────
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status",    400,
+                "error",     "Parámetro inválido",
+                "message",   "El parámetro '" + ex.getName() + "' tiene un valor inválido"
         ));
     }
 

@@ -1,5 +1,7 @@
 package com.example.demo1.infrastructure.config;
 
+import java.time.Clock;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,11 @@ public class ReplenishmentConfig {
             @Value("${replenishment.high-priority-days:3}") int highPriorityDays,
             @Value("${replenishment.medium-priority-days:7}") int mediumPriorityDays) {
         return new ReplenishmentParams(demandWindowDays, coverageDays, highPriorityDays, mediumPriorityDays);
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemDefaultZone();
     }
 
     @Bean

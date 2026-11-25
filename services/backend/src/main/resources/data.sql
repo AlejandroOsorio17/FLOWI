@@ -49,3 +49,14 @@ WHERE NOT EXISTS (
     SELECT 1 FROM inventario i
     WHERE i.store_id = s.id AND i.product_id = p.id
 );
+
+-- Inventario de los centros de distribución: cada centro con cada producto, cantidad aleatoria (50-300).
+-- Idempotente: solo inserta combinaciones distribution_center_id+product_id que no existan todavía.
+INSERT INTO inventario_centro (distribution_center_id, product_id, cantidad)
+SELECT dc.id, p.id, floor(random() * 251 + 50)::int
+FROM distribution_centers dc
+CROSS JOIN products p
+WHERE NOT EXISTS (
+    SELECT 1 FROM inventario_centro ic
+    WHERE ic.distribution_center_id = dc.id AND ic.product_id = p.id
+);

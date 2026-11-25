@@ -80,6 +80,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/inventory")
                         .hasAnyRole("ADMIN", "BODEGUERO")
 
+                        // reposición: lectura para cualquier rol autenticado
+                        .requestMatchers(HttpMethod.GET, "/api/reposiciones/**").authenticated()
+
                         .anyRequest().hasRole("ADMIN"))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, cause) ->
